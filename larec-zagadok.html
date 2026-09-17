@@ -1,0 +1,1357 @@
+<title>Ларец загадок</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    --bg:#f2e6c9;
+    --surface:#fbf4e3;
+    --surface-edge:#e7d6ac;
+    --ink:#2c2013;
+    --ink-soft:#75604a;
+    --accent:#9c3a26;
+    --accent-deep:#6f2416;
+    --accent-ink:#fbf1e2;
+    --good:#3f6b3a;
+    --gold:#a97a34;
+    --gold-soft:#c9a35f;
+    --line:#cdb383;
+    --tape:#e9d7a8;
+    --shadow: 0 14px 30px -18px rgba(43,26,10,.55);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#181009;
+      --surface:#241a10;
+      --surface-edge:#3a2c19;
+      --ink:#ecdfc2;
+      --ink-soft:#b39d78;
+      --accent:#e0805a;
+      --accent-deep:#b85a3b;
+      --accent-ink:#241209;
+      --good:#7fb377;
+      --gold:#d8ac5c;
+      --gold-soft:#a3813f;
+      --tape:#3a2c19;
+      --shadow: 0 18px 34px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#181009;
+    --surface:#241a10;
+    --surface-edge:#3a2c19;
+    --ink:#ecdfc2;
+    --ink-soft:#b39d78;
+    --accent:#e0805a;
+    --accent-deep:#b85a3b;
+    --accent-ink:#241209;
+    --good:#7fb377;
+    --gold:#d8ac5c;
+    --gold-soft:#a3813f;
+    --tape:#3a2c19;
+    --shadow: 0 18px 34px -16px rgba(0,0,0,.6);
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, color-mix(in srgb, var(--gold) 14%, transparent), transparent),
+      var(--bg);
+    color:var(--ink);
+    font-family:'PT Serif', Georgia, 'Times New Roman', serif;
+    padding-block: 3.5rem 4.5rem;
+    padding-inline: 20px;
+  }
+  .wrap{ max-width: 700px; margin: 0 auto; }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', 'Courier New', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-align:center;
+    margin: 0 0 .9rem;
+  }
+  h1{
+    font-family:'Unbounded', 'PT Serif', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2rem, 6vw, 2.8rem);
+    line-height: 1.05;
+    text-align:center;
+    text-wrap: balance;
+    margin: 0 0 1rem;
+    color: var(--ink);
+  }
+  .lede{
+    text-align:center;
+    font-size: 1.04rem;
+    line-height:1.6;
+    color: var(--ink-soft);
+    max-width: 44ch;
+    margin: 0 auto 1.4rem;
+    text-wrap: balance;
+  }
+
+  /* the book */
+  .book-shell{
+    max-width: 620px;
+    margin: 2.4rem auto 2.2rem;
+    perspective: 1800px;
+  }
+  .book-stage{
+    position: relative;
+    min-height: 480px;
+    transition: height .4s ease;
+  }
+  .page{
+    position: absolute;
+    inset: 0;
+    background: var(--surface);
+    border: 1px solid var(--surface-edge);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 2rem 1.7rem 1.7rem 2.2rem;
+    overflow-y: auto;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+    transform-origin: left center;
+    transform: rotateY(0deg);
+    transition: transform .65s cubic-bezier(.45,.05,.15,1);
+  }
+  .page::before{
+    content:"";
+    position:absolute; top:0; bottom:0; left:0;
+    width: 22px;
+    background: linear-gradient(90deg, rgba(0,0,0,.2), transparent);
+    pointer-events:none;
+    border-radius: 10px 0 0 10px;
+  }
+  .page-cover{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .page-cover h1{ margin-top:0; }
+  .cover-mark{
+    font-size: 1.8rem;
+    color: var(--gold);
+    margin: .3rem 0 .9rem;
+  }
+  .cover-hint{
+    font-family:'JetBrains Mono', monospace;
+    font-size: .76rem;
+    letter-spacing:.04em;
+    color: var(--ink-soft);
+    margin:0;
+  }
+
+  .book-nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:.8rem;
+    margin-top: 1.1rem;
+  }
+  .page-btn{
+    font-family:'JetBrains Mono', monospace;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    color: var(--accent-ink);
+    background: var(--accent);
+    border: none;
+    border-radius: 999px;
+    padding: .65rem 1.3rem;
+    cursor: pointer;
+    transition: background .2s ease, opacity .2s ease, transform .15s ease;
+  }
+  .page-btn:hover:not(:disabled){ background: var(--accent-deep); }
+  .page-btn:active:not(:disabled){ transform: scale(.97); }
+  .page-btn:disabled{ opacity:.35; cursor:default; }
+  .page-indicator{
+    font-family:'JetBrains Mono', monospace;
+    font-size: .78rem;
+    color: var(--ink-soft);
+    white-space:nowrap;
+  }
+  .nav-hint{
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size: .74rem;
+    color: var(--ink-soft);
+    min-height: 1.2em;
+    margin: .6rem 0 0;
+  }
+
+  .card-head{
+    display:flex;
+    align-items:center;
+    gap: .9rem;
+    margin-bottom: 1.1rem;
+  }
+  .seal{
+    flex: none;
+    width: 2.6rem; height: 2.6rem;
+    border-radius: 50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: .95rem;
+    color: var(--accent-ink);
+    background: radial-gradient(circle at 32% 28%, var(--accent), var(--accent-deep) 75%);
+    box-shadow: 0 0 0 2px var(--gold) inset, 0 3px 6px rgba(0,0,0,.3);
+  }
+  .kind{
+    font-family:'JetBrains Mono', monospace;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .riddle-text{
+    font-size: 1.02rem;
+    line-height: 1.6;
+    margin: 0 0 1.4rem;
+  }
+
+  .poem{
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 1px dashed transparent;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height .6s ease, opacity .5s ease, margin-top .6s ease, padding-top .6s ease, border-color .6s ease;
+  }
+  .poem.revealed{
+    margin-top: 1.3rem;
+    padding-top: 1.1rem;
+    border-top-color: var(--line);
+    max-height: 12em;
+    opacity: 1;
+  }
+  .poem-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 .5rem;
+  }
+  .poem-text{
+    font-style: italic;
+    font-size: 1.02rem;
+    line-height: 1.75;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  .final-poem .poem-text{ margin: 0 0 1rem; font-size: 1.05rem; }
+  .final-poem .poem-text:last-child{ margin-bottom: 0; }
+
+  .page-final{ text-align: center; }
+  .page-final .card-head{ justify-content: center; }
+
+  /* the cat */
+  .cat-wrap{
+    position: absolute;
+    top: 44%;
+    left: 4%;
+    z-index: 5;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    pointer-events:none;
+    animation: catwalk 10s ease-in-out infinite;
+  }
+  .cat-wrap.paused{ animation-play-state: paused; }
+  .cat-wrap.paused .cat-face,
+  .cat-wrap.paused .cat-leg,
+  .cat-wrap.paused .cat-torso,
+  .cat-wrap.paused .cat-tail{ animation-play-state: paused; }
+  @keyframes catwalk{
+    0%{ left: 4%; }
+    50%{ left: 68%; }
+    100%{ left: 4%; }
+  }
+  .cat-bubble{
+    pointer-events:none;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: .3rem .6rem;
+    font-family:'JetBrains Mono', monospace;
+    font-size: .68rem;
+    color: var(--ink);
+    white-space: nowrap;
+    margin-bottom: .35rem;
+    box-shadow: var(--shadow);
+  }
+  .cat-btn{
+    position: relative;
+    pointer-events:auto;
+    background:none;
+    border:none;
+    line-height:1;
+    cursor:pointer;
+    padding:0;
+    transition: transform .15s ease;
+  }
+  .cat-btn:active{ transform: scale(.92); }
+  .cat-btn.petted{ animation: catpop .5s ease; }
+  @keyframes catpop{
+    0%{ transform: scale(1) rotate(0deg); }
+    40%{ transform: scale(1.28) rotate(-8deg); }
+    100%{ transform: scale(1) rotate(0deg); }
+  }
+
+  .cat-face{ display:block; animation: catFace 10s ease-in-out infinite; }
+  @keyframes catFace{
+    0%, 49%{ transform: scaleX(1); }
+    51%, 100%{ transform: scaleX(-1); }
+  }
+  .cat-svg{ display:block; filter: drop-shadow(0 3px 3px rgba(0,0,0,.18)); }
+  .cat-leg{
+    transform-box: fill-box;
+    transform-origin: 50% 0%;
+    animation-duration: .55s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+  .cat-leg-back{ animation-name: legSwingA; }
+  .cat-leg-front{ animation-name: legSwingB; }
+  @keyframes legSwingA{
+    0%, 100%{ transform: rotate(18deg); }
+    50%{ transform: rotate(-18deg); }
+  }
+  @keyframes legSwingB{
+    0%, 100%{ transform: rotate(-18deg); }
+    50%{ transform: rotate(18deg); }
+  }
+  .cat-torso{
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: bodyBob .55s ease-in-out infinite;
+  }
+  @keyframes bodyBob{
+    0%, 100%{ transform: translateY(0); }
+    50%{ transform: translateY(-2px); }
+  }
+  .cat-tail{
+    transform-box: fill-box;
+    transform-origin: 100% 55%;
+    animation: tailSway 1s ease-in-out infinite;
+  }
+  @keyframes tailSway{
+    0%, 100%{ transform: rotate(-6deg); }
+    50%{ transform: rotate(11deg); }
+  }
+  .cat-heart{
+    position:absolute;
+    bottom: 2.3rem;
+    left: 50%;
+    font-size: .95rem;
+    pointer-events:none;
+    animation: catheart 1.1s ease-out forwards;
+  }
+  @keyframes catheart{
+    0%{ transform: translate(-50%,0) scale(.6); opacity:0; }
+    15%{ opacity:1; }
+    100%{ transform: translate(-50%,-48px) scale(1.1); opacity:0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .cat-wrap, .cat-face, .cat-leg, .cat-torso, .cat-tail{ animation:none; }
+  }
+
+  .reveal-btn{
+    font-family:'JetBrains Mono', monospace;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    background: var(--accent);
+    border: none;
+    border-radius: 999px;
+    padding: .65rem 1.3rem;
+    cursor: pointer;
+    transition: background .2s ease, transform .15s ease;
+  }
+  .reveal-btn:hover{ background: var(--accent-deep); }
+  .reveal-btn:active{ transform: scale(.97); }
+  .reveal-btn:focus-visible{ outline: 2px solid var(--gold); outline-offset: 3px; }
+
+  .mech-controls{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:.9rem;
+    flex-wrap:wrap;
+    margin: 0 0 1rem;
+  }
+  .mech-status{
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:.85rem;
+    color: var(--ink-soft);
+    min-height: 1.3em;
+    margin: .3rem 0 0;
+  }
+  .mech-status.success{ color: var(--good); font-weight:600; }
+
+  /* memory cards */
+  .memory-board{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:.5rem;
+    width: min(280px, 100%);
+    margin: 0 auto 1.1rem;
+  }
+  .memory-card{
+    aspect-ratio: 1;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Unbounded', sans-serif;
+    font-weight:700;
+    font-size: 1.3rem;
+    color: var(--ink);
+    background: var(--surface-edge);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor:pointer;
+    user-select:none;
+    transition: transform .12s ease, background .15s ease, border-color .15s ease;
+  }
+  .memory-card .back{ color: var(--gold-soft); font-size: 1.1rem; }
+  .memory-card:not(.revealed):not(.matched):hover{ background: var(--gold-soft); transform: scale(1.03); }
+  .memory-card.revealed{ background: var(--surface); border-color: var(--accent); }
+  .memory-card.matched{ background: var(--surface); border-color: var(--good); color: var(--good); opacity:.7; cursor:default; }
+
+  /* cipher dial */
+  .dial-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 1.4rem;
+    flex-wrap:wrap;
+    margin: .3rem 0 1.2rem;
+  }
+  .dial{
+    position:relative;
+    width:132px; height:132px;
+    border-radius:50%;
+    background: repeating-conic-gradient(var(--gold-soft) 0deg 1.6deg, transparent 1.6deg 11.25deg);
+    touch-action:none;
+    cursor:grab;
+  }
+  .dial:active{ cursor:grabbing; }
+  .dial::before{
+    content:"";
+    position:absolute; inset:13px;
+    border-radius:50%;
+    background: var(--surface);
+    box-shadow: 0 0 0 1px var(--line) inset;
+  }
+  .dial::after{
+    content:"";
+    position:absolute; top:50%; left:50%;
+    width:9px; height:9px; border-radius:50%;
+    background: var(--accent-deep);
+    box-shadow: 0 0 0 2px var(--gold);
+    transform: translate(-50%,-50%);
+    z-index:2;
+  }
+  .dial-pointer{
+    position:absolute; top:50%; left:50%;
+    width:4px; height:52px;
+    background: var(--accent);
+    border-radius: 3px 3px 0 0;
+    transform-origin: 50% 100%;
+    transform: translate(-50%,-100%) rotate(0deg);
+    pointer-events:none;
+    z-index:1;
+  }
+  .dial-side{ display:flex; flex-direction:column; align-items:center; gap:.5rem; }
+  .shift-readout{
+    font-family:'JetBrains Mono', monospace;
+    font-size:.82rem;
+    color: var(--ink-soft);
+  }
+  .shift-readout b{ color:var(--ink); }
+  .shift-btns{ display:flex; gap:.4rem; }
+  .shift-btns button{
+    width:2rem; height:2rem;
+    border-radius:50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font-family:'JetBrains Mono', monospace;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .shift-btns button:hover{ background: var(--surface-edge); }
+
+  .cipher-text{
+    text-align:center;
+    margin: 0 0 .5rem;
+  }
+  .cipher-text .label{
+    display:block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:.68rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color: var(--gold);
+    margin-bottom:.25rem;
+  }
+  .cipher-text .value{
+    font-family:'Unbounded', sans-serif;
+    font-weight:600;
+    font-size: 1.05rem;
+    letter-spacing:.04em;
+  }
+  #decoded-value{ min-height:1.4em; }
+
+  /* combination lock */
+  .lock-dials{
+    display:flex;
+    gap: .8rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin: .3rem 0 1.3rem;
+  }
+  .lock-dial-group{
+    display:flex; flex-direction:column; align-items:center; gap:.4rem;
+    width: 5.7rem;
+  }
+  .dial-arrow{
+    width:2rem; height:1.5rem;
+    border-radius:6px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-soft);
+    font-size:.75rem;
+    cursor:pointer;
+    transition: background .15s ease, color .15s ease;
+  }
+  .dial-arrow:hover{ background: var(--surface-edge); color: var(--ink); }
+  .digit-window{
+    width:2.7rem; height:3.1rem;
+    border-radius:8px;
+    background: var(--surface-edge);
+    box-shadow: 0 0 0 1px var(--line) inset, inset 0 3px 7px rgba(0,0,0,.18);
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .digit{
+    font-family:'Unbounded', sans-serif;
+    font-weight:700;
+    font-size:1.5rem;
+    color: var(--ink);
+    display:inline-block;
+    font-variant-numeric: tabular-nums;
+  }
+  .digit.flip{ animation: digitFlip .22s ease; }
+  @keyframes digitFlip{
+    0%{ transform: translateY(-55%); opacity:.2; }
+    100%{ transform: translateY(0); opacity:1; }
+  }
+  .dial-clue{
+    font-size:.74rem;
+    line-height:1.35;
+    color: var(--ink-soft);
+    text-align:center;
+    min-height: 2.7em;
+  }
+  .lock-dials.shake{ animation: shakeX .4s ease; }
+  @keyframes shakeX{
+    10%,90%{ transform: translateX(-3px); }
+    20%,80%{ transform: translateX(5px); }
+    30%,50%,70%{ transform: translateX(-7px); }
+    40%,60%{ transform: translateX(7px); }
+  }
+
+  /* pipe puzzle */
+  .pipe-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:.6rem;
+    margin: 0 auto 1.1rem;
+  }
+  .pipe-io{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size: 1.2rem;
+    color: var(--gold);
+    flex: none;
+  }
+  .pipe-board{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:.5rem;
+    width: min(210px, 65%);
+    aspect-ratio: 1;
+  }
+  .pipe-tile{
+    position: relative;
+    aspect-ratio: 1;
+    background: var(--surface-edge);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s ease;
+  }
+  .pipe-tile:hover{ background: var(--gold-soft); }
+  .pipe-joint{
+    position:absolute; top:50%; left:50%;
+    width:32%; height:32%;
+    background: var(--accent);
+    border-radius: 3px;
+    transform: translate(-50%,-50%);
+  }
+  .pipe-arm{ position:absolute; background: var(--accent); }
+  .pipe-arm.N{ top:0; left:50%; width:24%; height:52%; transform:translateX(-50%); border-radius: 3px 3px 0 0; }
+  .pipe-arm.S{ bottom:0; left:50%; width:24%; height:52%; transform:translateX(-50%); border-radius: 0 0 3px 3px; }
+  .pipe-arm.E{ right:0; top:50%; height:24%; width:52%; transform:translateY(-50%); border-radius: 0 3px 3px 0; }
+  .pipe-arm.W{ left:0; top:50%; height:24%; width:52%; transform:translateY(-50%); border-radius: 3px 0 0 3px; }
+
+  /* anagram tiles */
+  .anagram-tiles{
+    display:flex;
+    gap:.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin: 0 0 1.1rem;
+  }
+  .letter-tile{
+    width:2.5rem; height:2.5rem;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Unbounded', sans-serif;
+    font-weight:700;
+    font-size: 1.15rem;
+    color: var(--ink);
+    background: var(--surface-edge);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor:pointer;
+    user-select:none;
+    transition: background .15s ease, transform .15s ease;
+  }
+  .letter-tile:hover{ background: var(--gold-soft); }
+  .letter-tile.selected{
+    background: var(--accent);
+    color: var(--accent-ink);
+    transform: scale(1.08);
+  }
+  .anagram-clue{
+    text-align:center;
+    font-size:.88rem;
+    color: var(--ink-soft);
+    margin: -.6rem 0 1rem;
+  }
+
+  @media (max-width: 480px){
+    .page{ padding: 1.6rem 1.2rem 1.4rem 1.7rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .reveal-btn, .memory-card, .digit, .lock-dials, .pipe-tile, .letter-tile, .poem, .page, .page-btn, .book-stage{ transition:none; animation:none; }
+  }
+</style>
+
+<div class="wrap">
+  <div class="book-shell">
+    <div class="book-stage" id="book-stage">
+
+      <section class="page page-cover" data-page="0">
+        <p class="eyebrow">С пяти истории</p>
+        <h1>Ларец загадок</h1>
+        <p class="lede">Здесь мало просто покрутить и подвигать — почти в каждой головоломке свой подвох: обманчивая метка, вопросы-ловушки, карты-двойники и трубы, которые никуда не ведут. Читайте условие внимательно.</p>
+        <p class="cover-mark">❦</p>
+        <p class="cover-hint">Нажмите «Вперёд», чтобы открыть первую страницу</p>
+      </section>
+
+      <section class="page" data-page="1">
+        <div class="card-head">
+          <span class="seal">№1</span>
+          <span class="kind">Карты памяти — ловушка двойников</span>
+        </div>
+        <p class="riddle-text">Переверните по две карты, чтобы найти шесть пар. Среди символов есть парочки-обманки, которые издалека выглядят почти одинаково — не путайте их между собой.</p>
+        <div class="memory-board" id="memory-board" role="group" aria-label="Карты памяти"></div>
+        <div class="mech-controls">
+          <button class="reveal-btn" id="memory-shuffle" type="button">Перемешать</button>
+        </div>
+        <p class="mech-status" id="memory-status">Ходов: 0</p>
+        <div class="poem" id="poem-1">
+          <p class="poem-label">Четверостишие</p>
+          <p class="poem-text">Двойник хитёр, но верь не сразу,<br>В толпе похожих — правда видна.<br>Кто дважды взглянет, тот ни разу<br>Не спутает: пара — одна.</p>
+        </div>
+      </section>
+
+      <section class="page" data-page="2">
+        <div class="card-head">
+          <span class="seal">№2</span>
+          <span class="kind">Шифровальный диск — ловушка на диске</span>
+        </div>
+        <p class="riddle-text">Кто-то зашифровал короткую фразу, сдвинув каждую букву по алфавиту. На ободе диска нацарапана метка — но прежний хозяин был известным шутником, так что верить ей на слово не стоит. Покрутите диск и проверяйте результат по смыслу, а не по метке.</p>
+
+        <p class="cipher-text"><span class="label">Царапина на ободе гласит</span><span class="value">сдвиг 22</span></p>
+
+        <p class="cipher-text"><span class="label">Зашифровано</span><span class="value" id="cipher-value"></span></p>
+
+        <div class="dial-row">
+          <div class="dial" id="cipher-dial">
+            <div class="dial-pointer" id="dial-pointer"></div>
+          </div>
+          <div class="dial-side">
+            <p class="shift-readout">Сдвиг: <b id="shift-val">0</b></p>
+            <div class="shift-btns">
+              <button type="button" id="shift-minus" aria-label="Уменьшить сдвиг">−</button>
+              <button type="button" id="shift-plus" aria-label="Увеличить сдвиг">+</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="cipher-text"><span class="label">Получается</span><span class="value" id="decoded-value">—</span></p>
+
+        <div class="mech-controls">
+          <button class="reveal-btn" id="cipher-check" type="button">Проверить</button>
+        </div>
+        <p class="mech-status" id="cipher-status"></p>
+        <div class="poem" id="poem-2">
+          <p class="poem-label">Четверостишие</p>
+          <p class="poem-text">На ободе чужая ложь,<br>Не верь ей — это лишь узор.<br>Свой путь умом ты сам найдёшь,<br>Раз смысл важнее, чем прибор.</p>
+        </div>
+      </section>
+
+      <section class="page" data-page="3">
+        <div class="card-head">
+          <span class="seal">№3</span>
+          <span class="kind">Замок сундука — вопросы с подвохом</span>
+        </div>
+        <p class="riddle-text">Выставьте на каждом диске цифру — ответ на вопрос под ним. Часть вопросов — с подвохом: очевидный первый ответ там неверен, считайте до конца.</p>
+
+        <div class="lock-dials" id="lock-dials">
+          <div class="lock-dial-group">
+            <button class="dial-arrow" data-dial="0" data-dir="1" type="button" aria-label="Увеличить">▲</button>
+            <div class="digit-window"><span class="digit" id="digit-0">0</span></div>
+            <button class="dial-arrow" data-dial="0" data-dir="-1" type="button" aria-label="Уменьшить">▼</button>
+            <p class="dial-clue">Сколько дней в неделе?</p>
+          </div>
+          <div class="lock-dial-group">
+            <button class="dial-arrow" data-dial="1" data-dir="1" type="button" aria-label="Увеличить">▲</button>
+            <div class="digit-window"><span class="digit" id="digit-1">0</span></div>
+            <button class="dial-arrow" data-dial="1" data-dir="-1" type="button" aria-label="Уменьшить">▼</button>
+            <p class="dial-clue">Сколько будет 2 + 2 × 2?</p>
+          </div>
+          <div class="lock-dial-group">
+            <button class="dial-arrow" data-dial="2" data-dir="1" type="button" aria-label="Увеличить">▲</button>
+            <div class="digit-window"><span class="digit" id="digit-2">0</span></div>
+            <button class="dial-arrow" data-dial="2" data-dir="-1" type="button" aria-label="Уменьшить">▼</button>
+            <p class="dial-clue">Сколько сторон у монеты?</p>
+          </div>
+          <div class="lock-dial-group">
+            <button class="dial-arrow" data-dial="3" data-dir="1" type="button" aria-label="Увеличить">▲</button>
+            <div class="digit-window"><span class="digit" id="digit-3">0</span></div>
+            <button class="dial-arrow" data-dial="3" data-dir="-1" type="button" aria-label="Уменьшить">▼</button>
+            <p class="dial-clue">Половина от половины дюжины?</p>
+          </div>
+          <div class="lock-dial-group">
+            <button class="dial-arrow" data-dial="4" data-dir="1" type="button" aria-label="Увеличить">▲</button>
+            <div class="digit-window"><span class="digit" id="digit-4">0</span></div>
+            <button class="dial-arrow" data-dial="4" data-dir="-1" type="button" aria-label="Уменьшить">▼</button>
+            <p class="dial-clue">Сколько будет 10 − 2 × 3?</p>
+          </div>
+        </div>
+
+        <div class="mech-controls">
+          <button class="reveal-btn" id="lock-check" type="button">Проверить замок</button>
+        </div>
+        <p class="mech-status" id="lock-status"></p>
+        <div class="poem" id="poem-3">
+          <p class="poem-label">Четверостишие</p>
+          <p class="poem-text">Простой ответ — не значит верный,<br>Считай до самого конца.<br>Кто пропускает шаг, наверно,<br>Не отопрёт замок ларца.</p>
+        </div>
+      </section>
+
+      <section class="page" data-page="4">
+        <div class="card-head">
+          <span class="seal">№4</span>
+          <span class="kind">Трубопровод — не все трубы ведут к цели</span>
+        </div>
+        <p class="riddle-text">Клик поворачивает трубу на 90°. Соберите путь от входа слева до выхода справа через среднюю строку — но на поле есть лишние трубы в стороне от маршрута, крутить которые бессмысленно.</p>
+
+        <div class="pipe-row">
+          <span class="pipe-io">→</span>
+          <div class="pipe-board" id="pipe-board" role="group" aria-label="Поле трубопровода"></div>
+          <span class="pipe-io">→</span>
+        </div>
+
+        <div class="mech-controls">
+          <button class="reveal-btn" id="pipe-shuffle" type="button">Перемешать</button>
+        </div>
+        <p class="mech-status" id="pipe-status"></p>
+        <div class="poem" id="poem-4">
+          <p class="poem-label">Четверостишие</p>
+          <p class="poem-text">Не каждый путь ведёт до края,<br>Иной лишь вьётся просто так.<br>Смотри, дорогу выбирая,<br>Куда ведёт твой каждый шаг.</p>
+        </div>
+      </section>
+
+      <section class="page" data-page="5">
+        <div class="card-head">
+          <span class="seal">№5</span>
+          <span class="kind">Шкатулка — переставьте буквы</span>
+        </div>
+        <p class="riddle-text">Буквы перемешаны. Кликните по двум плиткам по очереди, чтобы поменять их местами, и соберите слово из одиннадцати букв — им же называют всё, что вы сейчас решаете.</p>
+
+        <div class="anagram-tiles" id="anagram-tiles" role="group" aria-label="Плитки с буквами"></div>
+        <p class="anagram-clue" id="anagram-clue"></p>
+
+        <div class="mech-controls">
+          <button class="reveal-btn" id="anagram-shuffle" type="button">Перемешать</button>
+        </div>
+        <p class="mech-status" id="anagram-status"></p>
+        <div class="poem" id="poem-5">
+          <p class="poem-label">Четверостишие</p>
+          <p class="poem-text">Пока не сложишь буквы вместе,<br>Слова простого не прочтёшь.<br>Но если ты хитёр и честен,<br>В конце себя же узнаёшь.</p>
+        </div>
+      </section>
+
+      <section class="page page-final" data-page="6">
+        <div class="card-head">
+          <span class="seal">§</span>
+          <span class="kind">Последняя страница</span>
+        </div>
+        <p class="riddle-text">Ларец открыт. Вот то, что вы заслужили, разгадав все пять загадок.</p>
+        <div class="final-poem">
+          <p class="poem-text">Ты разгадала мои загадки,<br>Хотел обхитрить всех,<br>Но ты смогла — я этому рад,<br>Спасибо, что приняла в этом участие.</p>
+          <p class="poem-text">Пусть каждая строка останется с тобой,<br>Как маленькая память обо мне.</p>
+          <p class="poem-text">Благодарен тебе за дружбу!</p>
+        </div>
+
+        <div class="cat-wrap" id="cat-wrap">
+          <div class="cat-bubble" id="cat-bubble">Мяу... Тыкни на меня</div>
+          <button class="cat-btn" id="cat-btn" type="button" aria-label="Погладить кота">
+            <span class="cat-face">
+              <svg class="cat-svg" viewBox="0 0 100 62" width="62" height="38" aria-hidden="true">
+                <path class="cat-tail" d="M20,28 Q4,20 8,6" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/>
+                <rect class="cat-leg cat-leg-back" x="26" y="42" width="6" height="16" rx="3" fill="var(--accent-deep)"/>
+                <rect class="cat-leg cat-leg-front" x="64" y="42" width="6" height="16" rx="3" fill="var(--accent-deep)"/>
+                <g class="cat-torso">
+                  <ellipse cx="45" cy="32" rx="27" ry="15" fill="var(--accent)" stroke="var(--accent-deep)" stroke-width="1.5"/>
+                  <ellipse cx="42" cy="39" rx="13" ry="7" fill="var(--surface)"/>
+                  <circle cx="80" cy="22" r="13" fill="var(--accent)" stroke="var(--accent-deep)" stroke-width="1.5"/>
+                  <polygon points="70,12 74,1 79,13" fill="var(--accent)" stroke="var(--accent-deep)" stroke-width="1.5"/>
+                  <polygon points="86,12 91,2 95,14" fill="var(--accent)" stroke="var(--accent-deep)" stroke-width="1.5"/>
+                  <circle cx="85" cy="19" r="1.6" fill="var(--ink)"/>
+                  <circle cx="91" cy="23" r="1.2" fill="var(--gold)"/>
+                </g>
+              </svg>
+            </span>
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="book-nav">
+      <button class="page-btn" id="prev-page" type="button">‹ Назад</button>
+      <span class="page-indicator" id="page-indicator">Страница 1 из 7</span>
+      <button class="page-btn" id="next-page" type="button">Вперёд ›</button>
+    </div>
+    <p class="nav-hint" id="nav-hint"></p>
+  </div>
+</div>
+
+<script>
+  (function(){
+    /* ---------- shared progress + the book ---------- */
+    var mechSolved = new Set();
+
+    function revealPoem(n){
+      var el = document.getElementById('poem-' + n);
+      if(!el || el.classList.contains('revealed')) return;
+      el.classList.add('revealed');
+    }
+
+    function markMechSolved(key, pageIndex){
+      if(mechSolved.has(key)) return;
+      mechSolved.add(key);
+      revealPoem(pageIndex);
+      if(typeof updateNav === 'function') updateNav();
+      if(typeof syncStageHeight === 'function') syncStageHeight();
+    }
+
+    /* ---------- puzzle 1: memory cards (with look-alike decoy pairs) ---------- */
+    var SYMBOLS = ['З','Э','6','9','Ш','Щ'];
+    var cards = [];
+    var firstIndex = null;
+    var memoryLock = false;
+    var memoryMoves = 0;
+    var memoryBoard = document.getElementById('memory-board');
+    var memoryStatus = document.getElementById('memory-status');
+
+    function renderMemory(){
+      memoryBoard.innerHTML = '';
+      cards.forEach(function(card, i){
+        var el = document.createElement('div');
+        el.className = 'memory-card' + (card.matched ? ' matched' : (card.revealed ? ' revealed' : ''));
+        if(card.matched || card.revealed){
+          el.textContent = card.symbol;
+        } else {
+          var back = document.createElement('span');
+          back.className = 'back';
+          back.textContent = '◆';
+          el.appendChild(back);
+        }
+        el.addEventListener('click', function(){ flipCard(i); });
+        memoryBoard.appendChild(el);
+      });
+    }
+
+    function flipCard(i){
+      if(memoryLock || cards[i].matched || cards[i].revealed) return;
+      cards[i].revealed = true;
+      if(firstIndex === null){
+        firstIndex = i;
+        renderMemory();
+        return;
+      }
+      memoryMoves++;
+      memoryStatus.textContent = 'Ходов: ' + memoryMoves;
+      var a = firstIndex, b = i;
+      firstIndex = null;
+      if(cards[a].symbol === cards[b].symbol){
+        cards[a].matched = true;
+        cards[b].matched = true;
+        renderMemory();
+        checkMemoryWin();
+      } else {
+        memoryLock = true;
+        renderMemory();
+        setTimeout(function(){
+          cards[a].revealed = false;
+          cards[b].revealed = false;
+          memoryLock = false;
+          renderMemory();
+        }, 700);
+      }
+    }
+
+    function checkMemoryWin(){
+      if(cards.every(function(c){ return c.matched; })){
+        memoryStatus.textContent = 'Ходов: ' + memoryMoves + ' — все пары найдены!';
+        memoryStatus.classList.add('success');
+        markMechSolved('memory', 1);
+      }
+    }
+
+    function shuffleMemory(){
+      var deck = SYMBOLS.concat(SYMBOLS);
+      for(var i = deck.length - 1; i > 0; i--){
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
+      }
+      cards = deck.map(function(sym){ return { symbol: sym, revealed: false, matched: false }; });
+      firstIndex = null;
+      memoryLock = false;
+      memoryMoves = 0;
+      memoryStatus.textContent = 'Ходов: 0';
+      memoryStatus.classList.remove('success');
+      renderMemory();
+    }
+
+    document.getElementById('memory-shuffle').addEventListener('click', shuffleMemory);
+    shuffleMemory();
+
+    /* ---------- puzzle 2: cipher dial ---------- */
+    var ALPHA = 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
+    var LEN = ALPHA.length;
+    var SECRET_SHIFT = 15;
+    var PLAINTEXT = 'КЛЮЧ ПОД КОВРОМ';
+
+    function shiftText(text, s){
+      var out = '';
+      for(var i=0;i<text.length;i++){
+        var ch = text[i];
+        var idx = ALPHA.indexOf(ch);
+        if(idx === -1){ out += ch; continue; }
+        out += ALPHA[((idx + s) % LEN + LEN) % LEN];
+      }
+      return out;
+    }
+
+    var CIPHERTEXT = shiftText(PLAINTEXT, SECRET_SHIFT);
+    document.getElementById('cipher-value').textContent = CIPHERTEXT;
+
+    var shift = 0;
+    var dial = document.getElementById('cipher-dial');
+    var pointer = document.getElementById('dial-pointer');
+    var shiftValEl = document.getElementById('shift-val');
+    var decodedEl = document.getElementById('decoded-value');
+    var cipherStatus = document.getElementById('cipher-status');
+
+    function setShift(s){
+      shift = ((s % LEN) + LEN) % LEN;
+      shiftValEl.textContent = shift;
+      pointer.style.transform = 'translate(-50%,-100%) rotate(' + (shift/LEN*360) + 'deg)';
+      decodedEl.textContent = shiftText(CIPHERTEXT, -shift);
+    }
+    setShift(0);
+
+    var dragging = false;
+    function angleFromEvent(e){
+      var rect = dial.getBoundingClientRect();
+      var cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+      var deg = Math.atan2(e.clientY - cy, e.clientX - cx) * 180/Math.PI + 90;
+      var norm = ((deg % 360) + 360) % 360;
+      return Math.round(norm/360*LEN) % LEN;
+    }
+    dial.addEventListener('pointerdown', function(e){
+      dragging = true;
+      dial.setPointerCapture(e.pointerId);
+      setShift(angleFromEvent(e));
+    });
+    dial.addEventListener('pointermove', function(e){
+      if(dragging) setShift(angleFromEvent(e));
+    });
+    dial.addEventListener('pointerup', function(){ dragging = false; });
+    dial.addEventListener('pointercancel', function(){ dragging = false; });
+
+    document.getElementById('shift-plus').addEventListener('click', function(){ setShift(shift+1); });
+    document.getElementById('shift-minus').addEventListener('click', function(){ setShift(shift-1); });
+
+    document.getElementById('cipher-check').addEventListener('click', function(){
+      if(decodedEl.textContent === PLAINTEXT){
+        cipherStatus.textContent = 'Шифр раскрыт: «' + PLAINTEXT + '».';
+        cipherStatus.classList.add('success');
+        markMechSolved('cipher', 2);
+      } else {
+        cipherStatus.textContent = 'Пока читается бессмыслица — покрутите ещё.';
+        cipherStatus.classList.remove('success');
+      }
+    });
+
+    /* ---------- puzzle 3: combination lock ---------- */
+    var SECRET_CODE = [7,6,3,3,4];
+    var digits = [0,0,0,0,0];
+    var lockStatus = document.getElementById('lock-status');
+    var lockDials = document.getElementById('lock-dials');
+
+    function renderDigit(i){
+      var el = document.getElementById('digit-' + i);
+      el.textContent = digits[i];
+      el.classList.remove('flip');
+      void el.offsetWidth;
+      el.classList.add('flip');
+    }
+
+    document.querySelectorAll('.dial-arrow').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var i = Number(btn.getAttribute('data-dial'));
+        var dir = Number(btn.getAttribute('data-dir'));
+        digits[i] = ((digits[i] + dir) % 10 + 10) % 10;
+        renderDigit(i);
+      });
+    });
+
+    document.getElementById('lock-check').addEventListener('click', function(){
+      var ok = digits.every(function(d, i){ return d === SECRET_CODE[i]; });
+      if(ok){
+        lockStatus.textContent = 'Замок щёлкнул и открылся!';
+        lockStatus.classList.add('success');
+        markMechSolved('lock', 3);
+      } else {
+        lockStatus.textContent = 'Пока не то — крутите дальше.';
+        lockStatus.classList.remove('success');
+        lockDials.classList.remove('shake');
+        void lockDials.offsetWidth;
+        lockDials.classList.add('shake');
+      }
+    });
+
+    /* ---------- puzzle 4: pipe connector (with off-path decoy tiles) ---------- */
+    var SIDE_ORDER = ['N','E','S','W'];
+    var PIPE_SHAPE = { 0:'corner', 1:'straight', 2:'corner', 3:'corner', 5:'corner' };
+    var PIPE_REQUIRED = { 0:['S','E'], 1:['W','E'], 2:['W','S'], 3:['W','N'], 5:['N','E'] };
+    var pipeCells = [];
+    var pipeBoard = document.getElementById('pipe-board');
+    var pipeStatus = document.getElementById('pipe-status');
+    var pipeSolved = false;
+
+    function sidesForShape(shape, rot){
+      var base = shape === 'straight' ? ['N','S'] : ['N','E'];
+      var steps = rot / 90;
+      return base.map(function(s){
+        var idx = (SIDE_ORDER.indexOf(s) + steps) % 4;
+        return SIDE_ORDER[idx];
+      });
+    }
+    function sidesEqual(a, b){
+      return a.slice().sort().join('') === b.slice().sort().join('');
+    }
+
+    function renderPipes(){
+      pipeBoard.innerHTML = '';
+      pipeCells.forEach(function(cell, i){
+        var tile = document.createElement('div');
+        tile.className = 'pipe-tile';
+        var joint = document.createElement('div');
+        joint.className = 'pipe-joint';
+        tile.appendChild(joint);
+        sidesForShape(cell.shape, cell.rotation).forEach(function(side){
+          var arm = document.createElement('div');
+          arm.className = 'pipe-arm ' + side;
+          tile.appendChild(arm);
+        });
+        tile.addEventListener('click', function(){ rotatePipe(i); });
+        pipeBoard.appendChild(tile);
+      });
+    }
+
+    function rotatePipe(i){
+      if(pipeSolved) return;
+      pipeCells[i].rotation = (pipeCells[i].rotation + 90) % 360;
+      renderPipes();
+      checkPipeWin();
+    }
+
+    function checkPipeWin(){
+      var ok = Object.keys(PIPE_REQUIRED).every(function(key){
+        var i = Number(key);
+        return sidesEqual(sidesForShape(pipeCells[i].shape, pipeCells[i].rotation), PIPE_REQUIRED[i]);
+      });
+      if(ok){
+        pipeSolved = true;
+        pipeStatus.textContent = 'Путь собран — труба ведёт от входа к выходу!';
+        pipeStatus.classList.add('success');
+        markMechSolved('pipes', 4);
+      } else {
+        pipeStatus.textContent = '';
+        pipeStatus.classList.remove('success');
+      }
+    }
+
+    function shufflePipes(){
+      pipeCells = [];
+      for(var i=0; i<9; i++){
+        var shape = PIPE_SHAPE[i] || (Math.random() < 0.5 ? 'straight' : 'corner');
+        var rotation = [0,90,180,270][Math.floor(Math.random()*4)];
+        pipeCells.push({ shape: shape, rotation: rotation });
+      }
+      pipeSolved = false;
+      pipeStatus.textContent = '';
+      pipeStatus.classList.remove('success');
+      renderPipes();
+    }
+
+    document.getElementById('pipe-shuffle').addEventListener('click', shufflePipes);
+    shufflePipes();
+
+    /* ---------- puzzle 5: anagram tiles ---------- */
+    var TARGET_WORD = 'ГОЛОВОЛОМКА';
+    var letters = TARGET_WORD.split('');
+    var selected = null;
+    var anagramSolved = false;
+    var tilesEl = document.getElementById('anagram-tiles');
+    var anagramStatus = document.getElementById('anagram-status');
+    document.getElementById('anagram-clue').textContent = 'Подсказка: этим же словом называют всё, что вы сейчас решаете.';
+
+    function renderTiles(){
+      tilesEl.innerHTML = '';
+      letters.forEach(function(ch, i){
+        var t = document.createElement('div');
+        t.className = 'letter-tile' + (i === selected ? ' selected' : '');
+        t.textContent = ch;
+        t.addEventListener('click', function(){ handleTileClick(i); });
+        tilesEl.appendChild(t);
+      });
+    }
+
+    function handleTileClick(i){
+      if(anagramSolved) return;
+      if(selected === null){
+        selected = i;
+      } else if(selected === i){
+        selected = null;
+      } else {
+        var tmp = letters[selected];
+        letters[selected] = letters[i];
+        letters[i] = tmp;
+        selected = null;
+      }
+      renderTiles();
+      checkAnagramWin();
+    }
+
+    function checkAnagramWin(){
+      if(letters.join('') === TARGET_WORD){
+        anagramSolved = true;
+        anagramStatus.textContent = 'Готово: «' + TARGET_WORD + '»!';
+        anagramStatus.classList.add('success');
+        markMechSolved('anagram', 5);
+      } else {
+        anagramStatus.textContent = '';
+        anagramStatus.classList.remove('success');
+      }
+    }
+
+    function shuffleLetters(){
+      do {
+        for(var i = letters.length - 1; i > 0; i--){
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = letters[i];
+          letters[i] = letters[j];
+          letters[j] = tmp;
+        }
+      } while(letters.join('') === TARGET_WORD);
+      selected = null;
+      anagramSolved = false;
+      anagramStatus.textContent = '';
+      anagramStatus.classList.remove('success');
+      renderTiles();
+    }
+
+    document.getElementById('anagram-shuffle').addEventListener('click', shuffleLetters);
+    shuffleLetters();
+
+    /* ---------- book page-flip navigation ---------- */
+    var stage = document.getElementById('book-stage');
+    var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+    var pageCount = pages.length;
+    var currentPage = 0;
+    var flipping = false;
+    var prevBtn = document.getElementById('prev-page');
+    var nextBtn = document.getElementById('next-page');
+    var pageIndicator = document.getElementById('page-indicator');
+    var navHint = document.getElementById('nav-hint');
+    var PAGE_KEYS = { 1:'memory', 2:'cipher', 3:'lock', 4:'pipes', 5:'anagram' };
+
+    function isPageUnlocked(i){
+      var key = PAGE_KEYS[i];
+      return !key || mechSolved.has(key);
+    }
+
+    function restPages(){
+      pages.forEach(function(p, i){
+        if(i < currentPage){
+          p.style.transform = 'rotateY(-180deg)';
+          p.style.zIndex = String(i);
+        } else if(i === currentPage){
+          p.style.transform = 'rotateY(0deg)';
+          p.style.zIndex = String(pageCount + 1);
+        } else {
+          p.style.transform = 'rotateY(0deg)';
+          p.style.zIndex = String(pageCount - i);
+        }
+      });
+    }
+
+    function updateNav(){
+      var locked = !isPageUnlocked(currentPage);
+      prevBtn.disabled = currentPage === 0;
+      nextBtn.disabled = currentPage === pageCount - 1 || locked;
+      pageIndicator.textContent = 'Страница ' + (currentPage + 1) + ' из ' + pageCount;
+      navHint.textContent = locked ? 'Сначала разгадайте головоломку на этой странице' : '';
+    }
+
+    function syncStageHeight(){
+      var maxH = 0;
+      pages.forEach(function(p){ maxH = Math.max(maxH, p.scrollHeight); });
+      if(maxH > 0){ stage.style.height = (maxH + 2) + 'px'; }
+    }
+
+    function goNext(){
+      if(flipping || currentPage >= pageCount - 1 || !isPageUnlocked(currentPage)) return;
+      flipping = true;
+      var outgoing = pages[currentPage];
+      outgoing.style.zIndex = String(pageCount + 5);
+      outgoing.style.transform = 'rotateY(-180deg)';
+      var finish = function(){
+        outgoing.removeEventListener('transitionend', finish);
+        currentPage++;
+        restPages();
+        updateNav();
+        flipping = false;
+      };
+      outgoing.addEventListener('transitionend', finish);
+      setTimeout(function(){ if(flipping) finish(); }, 750);
+    }
+
+    function goPrev(){
+      if(flipping || currentPage <= 0) return;
+      flipping = true;
+      var incoming = pages[currentPage - 1];
+      incoming.style.zIndex = String(pageCount + 5);
+      incoming.style.transform = 'rotateY(0deg)';
+      var finish = function(){
+        incoming.removeEventListener('transitionend', finish);
+        currentPage--;
+        restPages();
+        updateNav();
+        flipping = false;
+      };
+      incoming.addEventListener('transitionend', finish);
+      setTimeout(function(){ if(flipping) finish(); }, 750);
+    }
+
+    nextBtn.addEventListener('click', goNext);
+    prevBtn.addEventListener('click', goPrev);
+
+    restPages();
+    updateNav();
+    syncStageHeight();
+    window.addEventListener('resize', syncStageHeight);
+
+    /* ---------- the cat ---------- */
+    var catWrap = document.getElementById('cat-wrap');
+    var catBtn = document.getElementById('cat-btn');
+    var catBubble = document.getElementById('cat-bubble');
+    var CAT_DEFAULT = 'Мяу... Тыкни на меня';
+    var CAT_REPLIES = [
+      'Мур-мур! 💛',
+      'Спасибо, что дочитала!',
+      'Ты моя любимая загадочница!',
+      'Мурр... ещё разок?',
+      'Тепло от тебя, честно-мяу.'
+    ];
+    var catTimer = null;
+
+    function spawnHearts(){
+      for(var i=0; i<3; i++){
+        (function(i){
+          setTimeout(function(){
+            var heart = document.createElement('span');
+            heart.className = 'cat-heart';
+            heart.textContent = i % 2 === 0 ? '💛' : '🐾';
+            heart.style.marginLeft = ((i - 1) * 14) + 'px';
+            catWrap.appendChild(heart);
+            setTimeout(function(){ heart.remove(); }, 1150);
+          }, i * 120);
+        })(i);
+      }
+    }
+
+    catBtn.addEventListener('click', function(){
+      catWrap.classList.add('paused');
+      catBtn.classList.remove('petted');
+      void catBtn.offsetWidth;
+      catBtn.classList.add('petted');
+      catBubble.textContent = CAT_REPLIES[Math.floor(Math.random() * CAT_REPLIES.length)];
+      spawnHearts();
+      if(catTimer) clearTimeout(catTimer);
+      catTimer = setTimeout(function(){
+        catBubble.textContent = CAT_DEFAULT;
+        catWrap.classList.remove('paused');
+      }, 1900);
+    });
+  })();
+</script>
